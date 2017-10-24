@@ -3,6 +3,8 @@
  * Global video_bg javascript.
  */
 
+/* globals Vimeo:false */
+
 (function ($, Drupal, Modernizr, debounce) {
 
   'use strict';
@@ -28,13 +30,42 @@
     /*
     Load YouTube API and call instance build when finished.
      */
+    vimeo_api_state: 0, // 0 if unfetched, 1 if fetched, 2 if ready
+    get_vimeo_api: function (instance) {
+      if (this.vimeo_api_state === 0) {
+        this.log('Vimeo API Fetch');
+        // Insert Vimeo api script.
+        this.vimeo_api_state = 1;
+        var tag = document.createElement('script');
+        tag.src = 'https://player.vimeo.com/api/player.js';
+        tag.onload = $.proxy(function () {
+          this.log('Vimeo API Ready');
+          this.vimeo_api_state = 2;
+          instance.build_vimeo();
+          $(document).trigger('video-bg-vimeo-ready');
+        }, this);
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      }
+      else if (this.vimeo_api_state === 1) {
+        $(document).on('video-bg-vimeo-ready', function () {
+          instance.build_vimeo();
+        });
+      }
+      else if (this.vimeo_api_state === 2) {
+        instance.build_vimeo();
+      }
+    },
+
+    /*
+    Load YouTube API and call instance build when finished.
+     */
     youtube_api_state: 0, // 0 if unfetched, 1 if fetched, 2 if ready
     get_youtube_api: function (instance) {
-      var _this = this;
-      if (_this.youtube_api_state === 0) {
+      if (this.youtube_api_state === 0) {
         this.log('YouTube API Fetch');
         // Insert YouTube api script.
-        _this.youtube_api_state = 1;
+        this.youtube_api_state = 1;
         var tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
         var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -42,17 +73,17 @@
         // On load callback.
         window.onYouTubeIframeAPIReady = $.proxy(function () {
           this.log('YouTube API Ready');
-          _this.youtube_api_state = 2;
+          this.youtube_api_state = 2;
           instance.build_youtube();
           $(document).trigger('video-bg-youtube-ready');
         }, this);
       }
-      else if (_this.youtube_api_state === 1) {
+      else if (this.youtube_api_state === 1) {
         $(document).on('video-bg-youtube-ready', function () {
           instance.build_youtube();
         });
       }
-      else if (_this.youtube_api_state === 2) {
+      else if (this.youtube_api_state === 2) {
         instance.build_youtube();
       }
     },
@@ -100,6 +131,7 @@
       webm: false,
       ogg: false,
       youtube: false,
+      vimeo: false,
       priority: 'html5', // flash || html5
       image: false,
       sizing: 'fil', // fill || adjust
@@ -160,6 +192,52 @@
     },
 
     /*
+    Initialize Vimeo video.
+     */
+    make_vimeo: function () {
+      var _this = this;
+      _this.video = $('<div id="' + _this.id + '-video" class="video-bg-video"></div>').appendTo(_this.video_wrapper).css({
+        position: 'absolute'
+      }).hide();
+      _this.vimeo_ready = false;
+      VideoBg.get_vimeo_api(_this);
+    },
+
+    /*
+    Build YouTube video.
+     */
+    build_vimeo: function () {
+      var _this = this;
+      _this.log('Build Vimeo');
+
+      _this.player = new Vimeo.Player(_this.id + '-video', {
+        id: _this.settings.vimeo,
+        autoplay: _this.settings.autoplay ? 1 : 0,
+        loop: true
+      });
+
+      _this.player.ready().then($.proxy(_this.ready_vimeo, _this));
+    },
+
+    /*
+    Call when YouTube video has been loaded and is ready to play.
+     */
+    ready_vimeo: function () {
+      var _this = this;
+
+      _this.vimeo_ready = true;
+      _this.video = $('#' + _this.id + '-video');
+
+      if (_this.settings.mute) {
+        _this.mute();
+      }
+
+      _this.bind_video_resize();
+      _this.video.find('iframe').css({width: '100%', height: '100%'});
+      _this.video.fadeIn();
+    },
+
+    /*
     Initialize YouTube video.
      */
     make_youtube: function () {
@@ -167,9 +245,7 @@
       _this.video = $('<div id="' + _this.id + '-video" class="video-bg-video"></div>').appendTo(_this.video_wrapper).css({
         position: 'absolute'
       }).hide();
-
       _this.youtube_ready = false;
-
       VideoBg.get_youtube_api(_this);
     },
 
@@ -198,7 +274,7 @@
       }
 
       _this.youtube_started = 0;
-      _this.player = new YT.Player(this.id + '-video', {  // eslint-disable-line no-undef
+      _this.player = new YT.Player(_this.id + '-video', {  // eslint-disable-line no-undef
         height: '100%',
         width: '100%',
         playerVars: parameters,
@@ -331,11 +407,14 @@
      */
     play: function () {
       var _this = this;
-      if (_this.decision === 'html5') {
-        _this.player.play();
-      }
-      else if (_this.decision === 'youtube' && _this.youtube_ready) {
-        _this.player.playVideo();
+      switch (_this.decision) {
+        case 'html5':
+        case 'vimeo':
+          _this.player.play();
+          break;
+        case 'youtube':
+          _this.player.playVideo();
+          break;
       }
       this.log('Video play.');
     },
@@ -345,11 +424,14 @@
      */
     pause: function () {
       var _this = this;
-      if (_this.decision === 'html5') {
-        _this.player.pause();
-      }
-      else if (_this.decision === 'youtube' && _this.youtube_ready) {
-        _this.player.pauseVideo();
+      switch (_this.decision) {
+        case 'html5':
+        case 'vimeo':
+          _this.player.pause();
+          break;
+        case 'youtube':
+          _this.player.pauseVideo();
+          break;
       }
       this.log('Video pause.');
     },
@@ -372,11 +454,15 @@
      */
     is_mute: function () {
       var _this = this;
-      if (_this.decision === 'html5') {
-        return !(_this.player.volume);
-      }
-      else if (_this.decision === 'youtube' && _this.youtube_ready) {
-        return _this.player.is_mute();
+      switch (_this.decision) {
+        case 'html5':
+          return !(_this.player.volume);
+        case 'youtube':
+          return _this.player.is_mute();
+          break;
+        case 'vimeo':
+          return !(_this.player.getVolume());
+          break;
       }
       return false;
     },
@@ -386,11 +472,16 @@
      */
     mute: function () {
       var _this = this;
-      if (_this.decision === 'html5') {
-        _this.player.volume = 0;
-      }
-      else if (_this.decision === 'youtube' && _this.youtube_ready) {
-        _this.player.mute();
+      switch (_this.decision) {
+        case 'html5':
+          _this.player.volume = 0;
+          break;
+        case 'youtube':
+          _this.player.mute();
+          break;
+        case 'vimeo':
+          _this.player.setVolume(0);
+          break;
       }
       this.log('Video volume mute.');
     },
@@ -400,11 +491,16 @@
      */
     unmute: function () {
       var _this = this;
-      if (_this.decision === 'html5') {
-        _this.player.volume = 1;
-      }
-      else if (_this.decision === 'youtube' && _this.youtube_ready) {
-        _this.player.unMute();
+      switch (_this.decision) {
+        case 'html5':
+          _this.player.volume = 1;
+          break;
+        case 'youtube':
+          _this.player.unMute();
+          break;
+        case 'vimeo':
+          _this.player.setVolume(1);
+          break;
       }
       this.log('Video volume unmute.');
     },
@@ -427,11 +523,16 @@
      */
     rewind: function () {
       var _this = this;
-      if (_this.decision === 'html5') {
-        _this.player.currentTime = 0;
-      }
-      else if (_this.decision === 'youtube' && _this.youtube_ready) {
-        _this.player.seekTo(0);
+      switch (_this.decision) {
+        case 'html5':
+          _this.player.currentTime = 0;
+          break;
+        case 'youtube':
+          _this.player.seekTo(0);
+          break;
+        case 'vimeo':
+          _this.player.setCurrentTime(0);
+          break;
       }
     },
 
@@ -444,10 +545,13 @@
       _this.decision = 'image';
 
       // Decide what to use.
-      if (!_this.ismobile && (_this.supportsVideo || _this.settings.youtube !== false)) {
+      if (!_this.ismobile && (_this.supportsVideo || _this.settings.youtube !== false || _this.settings.vimeo)) {
         this.decision = _this.settings.priority;
         if (_this.settings.youtube !== false) {
           _this.decision = 'youtube';
+        }
+        else if (_this.settings.vimeo !== false) {
+          _this.decision = 'vimeo';
         }
         else if (_this.settings.priority === 'html5' && _this.supportsVideo) {
           _this.decision = 'html5';
@@ -542,7 +646,6 @@
             var wrapper = $('#' + id, context).once('video-bg');
             if (wrapper.length) {
               VideoBg.instances.push(new VideoBg(wrapper, settings.videoBg.items[id]));
-              // new video_background($('#' + id), settings.videoBg.items[id]);
             }
           }
         }

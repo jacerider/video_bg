@@ -63,43 +63,41 @@ class VideoEmbedBg extends FormatterBase implements ContainerFactoryPluginInterf
         $element[$delta] = ['#theme' => 'video_embed_field_missing_provider'];
       }
       else {
-        if ($provider->getPluginId() == 'youtube') {
 
-          $id = Html::cleanCssIdentifier(implode('-', $keys));
-          $element[$delta] = [
-            '#type' => 'container',
-            '#attached' => [
-              'library' => ['video_bg/video_bg'],
-            ],
-            '#attributes' => [
-              'id' => $id,
-              'class' => ['video-bg-wrapper'],
-            ],
-          ];
+        $id = Html::cleanCssIdentifier(implode('-', $keys));
+        $element[$delta] = [
+          '#type' => 'container',
+          '#attached' => [
+            'library' => ['video_bg/video_bg'],
+          ],
+          '#attributes' => [
+            'id' => $id,
+            'class' => ['video-bg-wrapper'],
+          ],
+        ];
 
-          $image = FALSE;
-          if ($this->getSetting('image_enable')) {
-            $image = $provider->getLocalThumbnailUri();
-            if ($image_style = $this->getSetting('image_style')) {
-              $image = ImageStyle::load($image_style)->buildUrl($image);
-            }
-            else {
-              $image = file_create_url($image);
-            }
+        $image = FALSE;
+        if ($this->getSetting('image_enable')) {
+          $image = $provider->getLocalThumbnailUri();
+          if ($image_style = $this->getSetting('image_style')) {
+            $image = ImageStyle::load($image_style)->buildUrl($image);
           }
-
-          $provider->downloadThumbnail();
-          $element[$delta]['#attached']['drupalSettings']['videoBg']['items'][$id] = [
-            'position' => 'absolute',
-            'video_ratio' => $this->getSetting('width') / $this->getSetting('height'),
-            'loop' => $this->getSetting('loop'),
-            'autoplay' => $this->getSetting('autoplay'),
-            'mute' => $this->getSetting('mute'),
-            'youtube' => $provider->getIdFromInput($item->value),
-            'image' => $image,
-            'sizing' => 'adjust',
-          ];
+          else {
+            $image = file_create_url($image);
+          }
         }
+
+        $provider->downloadThumbnail();
+        $element[$delta]['#attached']['drupalSettings']['videoBg']['items'][$id] = [
+          'position' => 'absolute',
+          'video_ratio' => $this->getSetting('width') / $this->getSetting('height'),
+          'loop' => $this->getSetting('loop'),
+          'autoplay' => $this->getSetting('autoplay'),
+          'mute' => $this->getSetting('mute'),
+          $provider->getPluginId() => $provider->getIdFromInput($item->value),
+          'image' => $image,
+          'sizing' => 'adjust',
+        ];
       }
     }
     return $element;
