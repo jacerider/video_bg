@@ -1,0 +1,15 @@
+video_bg:
+  version: VERSION
+  # css:
+  #   component:
+  #     css/video-bg.css: { minified: true }
+  js:
+    lib/modernizr.video.js: { minified: true }
+    js/video-bg.js: { minified: true }
+    # lib/video_background.js: { minified: true }
+  dependencies:
+    - core/jquery
+    - core/jquery.once
+    # - core/modernizr
+    - core/drupal
+    - core/drupal.debounce

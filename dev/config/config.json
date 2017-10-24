@@ -1,0 +1,25 @@
+{
+  "name": "video_bg",
+  "description": "Display videos as background elements.",
+  "browserSync": {
+    "enabled" : true,
+    "proxy" : "http://localhost",
+    "port" : 3000,
+    "openAutomatically" : false,
+    "notify" : false
+  },
+  "css": {
+    "file" : "escort.scss",
+    "dest": "../css",
+    "src": [
+      "scss/**/*.scss"
+    ],
+    "includePaths": []
+  },
+  "js": {
+    "dest": "../js",
+    "src": [
+      "js/**/*.js"
+    ]
+  }
+}
