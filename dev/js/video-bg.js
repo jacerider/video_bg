@@ -213,7 +213,10 @@
       _this.player = new Vimeo.Player(_this.id + '-video', {
         id: _this.settings.vimeo,
         autoplay: _this.settings.autoplay ? 1 : 0,
-        loop: true
+        background: true,
+        loop: true,
+        byline: false,
+        portrait: false
       });
 
       _this.player.ready().then($.proxy(_this.ready_vimeo, _this));
@@ -234,7 +237,13 @@
 
       _this.bind_video_resize();
       _this.video.find('iframe').css({width: '100%', height: '100%'});
-      _this.video.fadeIn();
+
+      _this.player.on('timeupdate', function (e) {
+        if (e.seconds > .5) {
+          _this.player.off('timeupdate');
+          _this.video.fadeIn();
+        }
+      });
     },
 
     /*
@@ -407,16 +416,14 @@
      */
     play: function () {
       var _this = this;
+      this.log('Video play.');
       switch (_this.decision) {
         case 'html5':
         case 'vimeo':
-          _this.player.play();
-          break;
+          return _this.player.play();
         case 'youtube':
-          _this.player.playVideo();
-          break;
+          return _this.player.playVideo();
       }
-      this.log('Video play.');
     },
 
     /*
@@ -459,10 +466,8 @@
           return !(_this.player.volume);
         case 'youtube':
           return _this.player.is_mute();
-          break;
         case 'vimeo':
           return !(_this.player.getVolume());
-          break;
       }
       return false;
     },

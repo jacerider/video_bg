@@ -41,6 +41,51 @@ class VideoEmbedBg extends FormatterBase implements ContainerFactoryPluginInterf
   protected $currentUser;
 
   /**
+   * Constructs a new instance of the plugin.
+   *
+   * @param string $plugin_id
+   *   The plugin_id for the formatter.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   *   The definition of the field to which the formatter is associated.
+   * @param array $settings
+   *   The formatter settings.
+   * @param string $label
+   *   The formatter label display setting.
+   * @param string $view_mode
+   *   The view mode.
+   * @param array $third_party_settings
+   *   Third party settings.
+   * @param \Drupal\video_embed_field\ProviderManagerInterface $provider_manager
+   *   The video embed provider manager.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   The logged in user.
+   */
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, $third_party_settings, ProviderManagerInterface $provider_manager, AccountInterface $current_user) {
+    parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
+    $this->providerManager = $provider_manager;
+    $this->currentUser = $current_user;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $plugin_id,
+      $plugin_definition,
+      $configuration['field_definition'],
+      $configuration['settings'],
+      $configuration['label'],
+      $configuration['view_mode'],
+      $configuration['third_party_settings'],
+      $container->get('video_embed_field.provider_manager'),
+      $container->get('current_user')
+    );
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
@@ -122,24 +167,25 @@ class VideoEmbedBg extends FormatterBase implements ContainerFactoryPluginInterf
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
+    $element = parent::settingsForm($form, $form_state);
     $field_name = $this->fieldDefinition->getName();
 
-    $form['autoplay'] = [
+    $element['autoplay'] = [
       '#title' => $this->t('Autoplay'),
       '#type' => 'checkbox',
       '#default_value' => $this->getSetting('autoplay'),
     ];
-    $form['loop'] = [
+    $element['loop'] = [
       '#title' => $this->t('Loop'),
       '#type' => 'checkbox',
       '#default_value' => $this->getSetting('loop'),
     ];
-    $form['mute'] = [
+    $element['mute'] = [
       '#title' => $this->t('Mute'),
       '#type' => 'checkbox',
       '#default_value' => $this->getSetting('mute'),
     ];
-    $form['width'] = [
+    $element['width'] = [
       '#title' => $this->t('Width'),
       '#type' => 'number',
       '#field_suffix' => 'px',
@@ -147,7 +193,7 @@ class VideoEmbedBg extends FormatterBase implements ContainerFactoryPluginInterf
       '#required' => TRUE,
       '#size' => 20,
     ];
-    $form['height'] = [
+    $element['height'] = [
       '#title' => $this->t('Height'),
       '#type' => 'number',
       '#field_suffix' => 'px',
@@ -155,14 +201,14 @@ class VideoEmbedBg extends FormatterBase implements ContainerFactoryPluginInterf
       '#required' => TRUE,
       '#size' => 20,
     ];
-    $form['image_enable'] = [
+    $element['image_enable'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Use Image'),
       '#description' => $this->t('An image will be displayed while the video is loading.'),
       '#default_value' => $this->getSetting('image_enable'),
       '#required' => FALSE,
     ];
-    $form['image_style'] = [
+    $element['image_style'] = [
       '#title' => $this->t('Image Style'),
       '#type' => 'select',
       '#default_value' => $this->getSetting('image_style'),
@@ -174,7 +220,7 @@ class VideoEmbedBg extends FormatterBase implements ContainerFactoryPluginInterf
         ],
       ],
     ];
-    return $form;
+    return $element;
   }
 
   /**
@@ -194,51 +240,6 @@ class VideoEmbedBg extends FormatterBase implements ContainerFactoryPluginInterf
       ]);
     }
     return $summary;
-  }
-
-  /**
-   * Constructs a new instance of the plugin.
-   *
-   * @param string $plugin_id
-   *   The plugin_id for the formatter.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
-   *   The definition of the field to which the formatter is associated.
-   * @param array $settings
-   *   The formatter settings.
-   * @param string $label
-   *   The formatter label display setting.
-   * @param string $view_mode
-   *   The view mode.
-   * @param array $third_party_settings
-   *   Third party settings.
-   * @param \Drupal\video_embed_field\ProviderManagerInterface $provider_manager
-   *   The video embed provider manager.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The logged in user.
-   */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, $settings, $label, $view_mode, $third_party_settings, ProviderManagerInterface $provider_manager, AccountInterface $current_user) {
-    parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
-    $this->providerManager = $provider_manager;
-    $this->currentUser = $current_user;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $plugin_id,
-      $plugin_definition,
-      $configuration['field_definition'],
-      $configuration['settings'],
-      $configuration['label'],
-      $configuration['view_mode'],
-      $configuration['third_party_settings'],
-      $container->get('video_embed_field.provider_manager'),
-      $container->get('current_user')
-    );
   }
 
 }
