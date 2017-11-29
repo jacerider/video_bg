@@ -293,15 +293,33 @@
           onStateChange: function (e) {
             if (e.data === 1 && _this.youtube_started === 0) {
               _this.youtube_started = 1;
-              _this.video.fadeIn();
+              _this.watch_youtube();
             }
             if (e.data === 0 && _this.settings.loop) {
               _this.rewind();
+              _this.mute();
               _this.play();
             }
           }
         }
       });
+    },
+
+    /*
+    Due to some weird browser issues (Safari) we keep playing video till
+    it actually plays.
+     */
+    watch_youtube: function () {
+      var _this = this;
+      if (_this.player.getCurrentTime() < 0.75) {
+        _this.play();
+        setTimeout(function () {
+          _this.watch_youtube();
+        }, 10);
+      }
+      else {
+        _this.video.fadeIn();
+      }
     },
 
     /*
