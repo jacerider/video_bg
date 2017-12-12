@@ -6,6 +6,7 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\file\Plugin\Field\FieldFormatter\FileFormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -59,7 +60,7 @@ class VideoBg extends FileFormatterBase implements ContainerFactoryPluginInterfa
       ];
       $extentions = explode(' ', $this->fieldDefinition->getSetting('file_extensions'));
       foreach ($files as $delta => $file) {
-        $config[$extentions[$delta]] = file_create_url($file->getFileUri());
+        $config[$extentions[$delta]] = file_create_url($this->getUri($file));
       }
     }
 
@@ -84,8 +85,16 @@ class VideoBg extends FileFormatterBase implements ContainerFactoryPluginInterfa
         ],
       ];
     }
+    ksm($element[0]['#attached']);
 
     return $element;
+  }
+
+  /**
+   * Returns the entity URI.
+   */
+  protected function getUri(EntityInterface $entity) {
+    return $entity->getFileUri();
   }
 
   /**
@@ -181,12 +190,10 @@ class VideoBg extends FileFormatterBase implements ContainerFactoryPluginInterfa
    *   The view mode.
    * @param array $third_party_settings
    *   Third party settings.
-   * @param \Drupal\video_embed_field\ProviderManagerInterface $provider_manager
-   *   The video embed provider manager.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The logged in user.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, $settings, $label, $view_mode, $third_party_settings, AccountInterface $current_user) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, AccountInterface $current_user) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
     $this->currentUser = $current_user;
   }

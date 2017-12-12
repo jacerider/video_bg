@@ -12,6 +12,7 @@ use Drupal\video_embed_field\ProviderManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\image\Entity\ImageStyle;
+use Drupal\Core\Field\FieldItemInterface;
 
 /**
  * Plugin implementation of the video field formatter.
@@ -62,7 +63,7 @@ class VideoEmbedBg extends FormatterBase implements ContainerFactoryPluginInterf
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The logged in user.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, $third_party_settings, ProviderManagerInterface $provider_manager, AccountInterface $current_user) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, ProviderManagerInterface $provider_manager, AccountInterface $current_user) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
     $this->providerManager = $provider_manager;
     $this->currentUser = $current_user;
@@ -102,13 +103,12 @@ class VideoEmbedBg extends FormatterBase implements ContainerFactoryPluginInterf
         $field_name,
         $delta,
       ];
-      $provider = $this->providerManager->loadProviderFromInput($item->value);
+      $provider = $this->getProvider($item);
 
       if (!$provider) {
         $element[$delta] = ['#theme' => 'video_embed_field_missing_provider'];
       }
       else {
-
         $id = Html::cleanCssIdentifier(implode('-', $keys));
         $element[$delta] = [
           '#type' => 'container',
@@ -139,13 +139,27 @@ class VideoEmbedBg extends FormatterBase implements ContainerFactoryPluginInterf
           'loop' => $this->getSetting('loop'),
           'autoplay' => $this->getSetting('autoplay'),
           'mute' => $this->getSetting('mute'),
-          $provider->getPluginId() => $provider->getIdFromInput($item->value),
+          $provider->getPluginId() => $provider->getIdFromInput($this->getVideoUrl($item)),
           'image' => $image,
           'sizing' => 'adjust',
         ];
       }
     }
     return $element;
+  }
+
+  /**
+   * Return the Video URL.
+   */
+  protected function getVideoUrl(FieldItemInterface $item) {
+    return $item->value;
+  }
+
+  /**
+   * Returns the entity URI.
+   */
+  protected function getProvider(FieldItemInterface $item) {
+    return $this->providerManager->loadProviderFromInput($item->value);
   }
 
   /**
