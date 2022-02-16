@@ -303,6 +303,9 @@
           }
         }
       });
+      // console.log(_this.video);
+      // _this.video.css('transform', '').hide().fadeIn();
+
     },
 
     /*
@@ -334,7 +337,9 @@
       if (_this.settings.mute) {
         _this.mute();
       }
-
+      setTimeout(function () {
+        _this.video.fadeIn();
+      }, 25);
       _this.bind_video_resize();
     },
 

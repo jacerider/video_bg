@@ -1,20 +1,14 @@
 {
-  "name": "jacerider/video_bg",
-  "description": "Display videos as background elements.",
+  "name": "drupal/video_bg",
   "type": "drupal-module",
+  "description": "Display videos as background elements.",
+  "keywords": ["Drupal"],
   "license": "GPL-2.0+",
-  "homepage": "https://github.com/jacerider/video_bg",
-  "authors": [
-    {
-      "name": "Cyle Carlson (JaceRider)",
-      "email": "jacerider@gmail.com",
-      "role": "Maintainer"
-    }
-  ],
-  "support": {
-    "issues": "https://github.com/jacerider/video_bg/issues",
-    "source": "https://github.com/jacerider/video_bg"
-  },
+  "homepage": "https://www.drupal.org/project/video_bg",
   "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/video_bg",
+    "source": "http://cgit.drupalcode.org/video_bg"
+  },
   "require": { }
 }
