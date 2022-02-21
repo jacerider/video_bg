@@ -363,9 +363,9 @@
      */
     video_resize: function () {
       var _this = this;
-      var width = _this.video_wrapper.width();
-      var height = _this.video_wrapper.height();
-      var ratio = _this.settings.video_ratio.toFixed(2);
+      var width = Number(_this.video_wrapper.width());
+      var height = Number(_this.video_wrapper.height());
+      var ratio = Number(_this.settings.video_ratio.toFixed(2));
 
       // Adjust height to width by ratio.
       if (!height) {
@@ -373,8 +373,8 @@
       }
 
       // Round
-      height = Math.ceil(height);
       width = Math.ceil(width);
+      height = Math.ceil(height);
 
       var parameters = {
         width: width + 'px',
@@ -668,7 +668,7 @@
      */
     calculateRatio: function (width, ratio) {
       switch (ratio) {
-        case 1.77:
+        case 1.78: // Rounded 1.77.
           return (width / 16) * 9; // 16:9
         default:
           return (width / 4) * 3; // 4:3
