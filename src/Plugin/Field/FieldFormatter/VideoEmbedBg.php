@@ -108,7 +108,6 @@ class VideoEmbedBg extends FormatterBase implements ContainerFactoryPluginInterf
         $element[$delta] = ['#theme' => 'video_embed_field_missing_provider'];
       }
       else {
-
         $id = Html::cleanCssIdentifier(implode('-', $keys));
         $element[$delta] = [
           '#type' => 'container',
@@ -140,7 +139,7 @@ class VideoEmbedBg extends FormatterBase implements ContainerFactoryPluginInterf
           'autoplay' => $this->getSetting('autoplay'),
           'mute' => $this->getSetting('mute'),
           $provider->getPluginId() => $provider->getIdFromInput($item->value),
-          'image' => $image,
+          'image' => $this->getSetting('image') ? $image : '',
           'sizing' => 'adjust',
         ];
       }
