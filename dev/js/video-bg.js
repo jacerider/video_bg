@@ -134,12 +134,13 @@
       vimeo: false,
       priority: 'html5', // flash || html5
       image: false,
-      sizing: 'fil', // fill || adjust
+      sizing: 'fill', // fill || adjust
       start: 0
     },
 
     initialize: function () {
       var _this = this;
+
       _this.set_wrapper_id();
       _this.set_inner_wrapper();
       _this.set_mobile_support();
@@ -278,10 +279,6 @@
         fs: 0
       };
 
-      if (_this.settings.loop) {
-        // parameters['playlist'] = _this.settings.youtube;
-      }
-
       _this.youtube_started = 0;
       _this.player = new YT.Player(_this.id + '-video', {  // eslint-disable-line no-undef
         height: '100%',
@@ -303,6 +300,8 @@
           }
         }
       });
+      _this.video.hide().fadeIn();
+
     },
 
     /*
@@ -334,7 +333,9 @@
       if (_this.settings.mute) {
         _this.mute();
       }
-
+      setTimeout(function () {
+        _this.video.fadeIn();
+      }, 25);
       _this.bind_video_resize();
     },
 
@@ -362,33 +363,25 @@
      */
     video_resize: function () {
       var _this = this;
-      var w = _this.video_wrapper.width();
-      var h = _this.video_wrapper.height();
+      var width = Number(_this.video_wrapper.width());
+      var height = Number(_this.video_wrapper.height());
+      var ratio = Number(_this.settings.video_ratio.toFixed(2));
 
-      var width = w;
-      var height = w / _this.settings.video_ratio;
-
-      if (height < h) {
-        height = h;
-        width = h * _this.settings.video_ratio;
+      // Adjust height to width by ratio.
+      if (!height) {
+        height = _this.calculateRatio(width, ratio);
       }
 
       // Round
-      height = Math.ceil(height);
       width = Math.ceil(width);
-
-      // Adjust
-      var top = Math.round(h / 2 - height / 2);
-      var left = Math.round(w / 2 - width / 2);
+      height = Math.ceil(height);
 
       var parameters = {
         width: width + 'px',
-        height: height + 'px',
-        top: top + 'px',
-        left: left + 'px'
+        height: height + 'px'
       };
 
-      _this.video.css(parameters);
+      _this.document.find('#' + _this.id).css(parameters);
       _this.log('Video resized ' + JSON.stringify(parameters) + '.');
     },
 
@@ -401,13 +394,15 @@
     },
 
     /*
-    Make image.
+    Make image background.
      */
     make_image_background: function () {
       var _this = this;
+
       if (_this.settings.image === false) {
         return;
       }
+
       var parameters = {
         backgroundImage: 'url(' + _this.settings.image + ')',
         backgroundSize: 'cover'
@@ -568,7 +563,7 @@
       _this.decision = 'image';
 
       // Decide what to use.
-      if (!_this.ismobile && (_this.supportsVideo || _this.settings.youtube !== false || _this.settings.vimeo)) {
+      if (_this.supportsVideo || _this.settings.youtube !== false || _this.settings.vimeo) {
         this.decision = _this.settings.priority;
         if (_this.settings.youtube !== false) {
           _this.decision = 'youtube';
@@ -658,6 +653,26 @@
     error: function (item) {
       var _this = this;
       VideoBg.error(item, '[' + _this.id + ']');
+    },
+
+    /**
+     * Calculate height by ratio, if not set.
+     *
+     * @param {number} width
+     *  Video width.
+     * @param {number} ratio
+     *  Passed ratio, defaults to 4:3.
+     *
+     * @return {number}
+     *  Calculated height.
+     */
+    calculateRatio: function (width, ratio) {
+      switch (ratio) {
+        case 1.78: // Rounded 1.77.
+          return (width / 16) * 9; // 16:9
+        default:
+          return (width / 4) * 3; // 4:3
+      }
     }
   });
 
