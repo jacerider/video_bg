@@ -146,6 +146,7 @@
       _this.set_mobile_support();
       _this.set_video_support();
       _this.set_decision();
+
       // Make video.
       _this['make_' + _this.decision]();
     },
@@ -265,10 +266,10 @@
     build_youtube: function () {
       var _this = this;
       var parameters = {
-        // loop: _this.settings.loop ? 1 : 0,
-        loop: 0,
+        loop: _this.settings.loop ? 1 : 0,
         start: _this.settings.start,
         autoplay: _this.settings.autoplay ? 1 : 0,
+        mute: _this.settings.mute ? 1 : 0,
         controls: 0,
         disablekb: 1,
         showinfo: 0,
@@ -364,13 +365,8 @@
     video_resize: function () {
       var _this = this;
       var width = Number(_this.video_wrapper.width());
-      var height = Number(_this.video_wrapper.height());
+      var height = Number(_this.calculateRatio(width, ratio));
       var ratio = Number(_this.settings.video_ratio.toFixed(2));
-
-      // Adjust height to width by ratio.
-      if (!height) {
-        height = _this.calculateRatio(width, ratio);
-      }
 
       // Round
       width = Math.ceil(width);
@@ -661,17 +657,15 @@
      * @param {number} width
      *  Video width.
      * @param {number} ratio
-     *  Passed ratio, defaults to 4:3.
+     *  Passed ratio, defaults to 16:9.
      *
      * @return {number}
      *  Calculated height.
      */
     calculateRatio: function (width, ratio) {
       switch (ratio) {
-        case 1.78: // Rounded 1.77.
-          return (width / 16) * 9; // 16:9
         default:
-          return (width / 4) * 3; // 4:3
+          return (width / 16) * 9; // 16:9
       }
     }
   });
