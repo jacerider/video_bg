@@ -156,6 +156,7 @@
      */
     make_html5: function () {
       var _this = this;
+
       var parameters = (_this.settings.autoplay ? 'autoplay ' : '') + (_this.settings.loop ? 'loop onended="this.play()" ' : '');
 
       var str = '<video width="100%" height="100%" ' + parameters + '>';
@@ -277,7 +278,9 @@
         iv_load_policy: 3,
         modestbranding: 1,
         rel: 0,
-        fs: 0
+        fs: 0,
+        playsinline: 1,
+        autohide: 1
       };
 
       _this.youtube_started = 0;
@@ -295,13 +298,11 @@
             }
             if (e.data === 0 && _this.settings.loop) {
               _this.rewind();
-              _this.mute();
               _this.play();
             }
           }
         }
       });
-      _this.video.hide().fadeIn();
 
     },
 
@@ -311,6 +312,7 @@
      */
     watch_youtube: function () {
       var _this = this;
+
       if (_this.player.getCurrentTime() < 0.75) {
         _this.play();
         setTimeout(function () {
@@ -334,10 +336,13 @@
       if (_this.settings.mute) {
         _this.mute();
       }
+
       setTimeout(function () {
         _this.video.fadeIn();
       }, 25);
+
       _this.bind_video_resize();
+      _this.watch_youtube();
     },
 
     /*
@@ -425,6 +430,7 @@
      */
     play: function () {
       var _this = this;
+
       this.log('Video play.');
       switch (_this.decision) {
         case 'html5':
