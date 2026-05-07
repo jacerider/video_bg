@@ -9,7 +9,6 @@ video_bg:
     # lib/video_background.js: { minified: true }
   dependencies:
     - core/jquery
-    - core/jquery.once
-    # - core/modernizr
+    - core/once
     - core/drupal
     - core/drupal.debounce

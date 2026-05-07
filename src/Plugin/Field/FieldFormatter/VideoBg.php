@@ -59,7 +59,8 @@ class VideoBg extends FileFormatterBase implements ContainerFactoryPluginInterfa
       ];
       $extentions = explode(' ', $this->fieldDefinition->getSetting('file_extensions'));
       foreach ($files as $delta => $file) {
-        $config[$extentions[$delta]] = file_create_url($file->getFileUri());
+        /** @var \Drupal\file\FileInterface $file */
+        $config[$extentions[$delta]] = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri()); 
       }
     }
 

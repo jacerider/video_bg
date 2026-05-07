@@ -76,8 +76,7 @@ gulp.task('js', function () {
   return gulp.src(config.js.src)
     .pipe(plumber())
     .pipe(eslint({
-      configFile: 'config/.eslintrc',
-      useEslintrc: false
+      configFile: 'config/.eslintrc'
     }))
     .pipe(eslint.format())
     .pipe(uglify())
