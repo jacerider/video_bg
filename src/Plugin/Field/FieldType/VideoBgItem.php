@@ -15,7 +15,7 @@ use Drupal\Component\Utility\Bytes;
  *   id = "video_bg",
  *   label = @Translation("Video BG"),
  *   description = @Translation("This field stores the ID of a video_bg as an integer value."),
- *   category = @Translation("Reference"),
+ *   category = "reference",
  *   default_widget = "video_bg",
  *   default_formatter = "video_bg",
  *   list_class = "\Drupal\file\Plugin\Field\FieldType\FileFieldItemList",
