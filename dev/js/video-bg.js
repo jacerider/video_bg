@@ -146,6 +146,7 @@
       _this.set_mobile_support();
       _this.set_video_support();
       _this.set_decision();
+
       // Make video.
       _this['make_' + _this.decision]();
     },
@@ -155,6 +156,7 @@
      */
     make_html5: function () {
       var _this = this;
+
       var parameters = (_this.settings.autoplay ? 'autoplay ' : '') + (_this.settings.loop ? 'loop onended="this.play()" ' : '');
 
       var str = '<video width="100%" height="100%" ' + parameters + '>';
@@ -265,10 +267,10 @@
     build_youtube: function () {
       var _this = this;
       var parameters = {
-        // loop: _this.settings.loop ? 1 : 0,
-        loop: 0,
+        loop: _this.settings.loop ? 1 : 0,
         start: _this.settings.start,
         autoplay: _this.settings.autoplay ? 1 : 0,
+        mute: _this.settings.mute ? 1 : 0,
         controls: 0,
         disablekb: 1,
         showinfo: 0,
@@ -276,7 +278,9 @@
         iv_load_policy: 3,
         modestbranding: 1,
         rel: 0,
-        fs: 0
+        fs: 0,
+        playsinline: 1,
+        autohide: 1
       };
 
       _this.youtube_started = 0;
@@ -294,13 +298,11 @@
             }
             if (e.data === 0 && _this.settings.loop) {
               _this.rewind();
-              _this.mute();
               _this.play();
             }
           }
         }
       });
-      _this.video.hide().fadeIn();
 
     },
 
@@ -310,6 +312,7 @@
      */
     watch_youtube: function () {
       var _this = this;
+
       if (_this.player.getCurrentTime() < 0.75) {
         _this.play();
         setTimeout(function () {
@@ -333,10 +336,13 @@
       if (_this.settings.mute) {
         _this.mute();
       }
+
       setTimeout(function () {
         _this.video.fadeIn();
       }, 25);
+
       _this.bind_video_resize();
+      _this.watch_youtube();
     },
 
     /*
@@ -364,13 +370,8 @@
     video_resize: function () {
       var _this = this;
       var width = Number(_this.video_wrapper.width());
-      var height = Number(_this.video_wrapper.height());
+      var height = Number(_this.calculateRatio(width, ratio));
       var ratio = Number(_this.settings.video_ratio.toFixed(2));
-
-      // Adjust height to width by ratio.
-      if (!height) {
-        height = _this.calculateRatio(width, ratio);
-      }
 
       // Round
       width = Math.ceil(width);
@@ -429,6 +430,7 @@
      */
     play: function () {
       var _this = this;
+
       this.log('Video play.');
       switch (_this.decision) {
         case 'html5':
@@ -661,17 +663,15 @@
      * @param {number} width
      *  Video width.
      * @param {number} ratio
-     *  Passed ratio, defaults to 4:3.
+     *  Passed ratio, defaults to 16:9.
      *
      * @return {number}
      *  Calculated height.
      */
     calculateRatio: function (width, ratio) {
       switch (ratio) {
-        case 1.78: // Rounded 1.77.
-          return (width / 16) * 9; // 16:9
         default:
-          return (width / 4) * 3; // 4:3
+          return (width / 16) * 9; // 16:9
       }
     }
   });
